@@ -3,7 +3,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 import praw as p
 
-class RedditBot(irc.IRCClient):
+class KBot(irc.IRCClient):
  def __init__(self,channel):
   self.nickname="klaatu"
   self.chan=channel
@@ -24,12 +24,12 @@ class RedditBot(irc.IRCClient):
   else:
    self.msg(channel,"Incorrect format")
 
-class RedditBotFactory(protocol.ClientFactory):
+class KBotFactory(protocol.ClientFactory):
  def __init__(self,channel):
   self.channel=channel
 
  def buildProtocol(self,addr):
-  p=RedditBot(self.channel)
+  p=KBot(self.channel)
   p.factory=self
   return p
 
@@ -42,7 +42,7 @@ class RedditBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
  if len(sys.argv)==3:
   r=p.Reddit(user_agent="klaatu")
-  f = RedditBotFactory("#"+sys.argv[2])
+  f = KBotFactory("#"+sys.argv[2])
   reactor.connectTCP(sys.argv[1], 6667, f)
   reactor.run()
  else:
