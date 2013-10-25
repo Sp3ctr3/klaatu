@@ -1,7 +1,7 @@
 klaatu
 ======
 
-An IRC bot made using python twisted framework
+An IRC bot made using the python twisted framework
 
 Usage
 -----
