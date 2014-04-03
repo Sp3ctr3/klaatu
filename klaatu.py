@@ -1,12 +1,13 @@
-import sys
+import sys,wolframalpha
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 import praw as p
 
 class KBot(irc.IRCClient):
- def __init__(self,channel):
+ def __init__(self,channel,wolf):
   self.nickname="klaatu"
   self.chan=channel
+  self.wolf=wolf
 
  def signedOn(self):
   self.join(self.chan)
@@ -21,15 +22,21 @@ class KBot(irc.IRCClient):
      self.msg(channel,i.title.encode('utf-8')+" "+i.url.encode('utf-8'))
    except:
     self.msg(channel,"Couldn't process your request")
-  else:
-   self.msg(channel,"Incorrect format")
+  elif msg.startswith(self.nickname+ ":") and len(msg.split(":"))==2:
+   query=str(msg.split(":")[1])
+   try:
+    result=next(self.wolf.query(query).results).text.encode('utf-8')
+    self.msg(channel,result)
+   except:
+    self.msg(channel,"I'm sorry I can't answer that")
 
 class KBotFactory(protocol.ClientFactory):
- def __init__(self,channel):
+ def __init__(self,channel,wolf):
   self.channel=channel
+  self.wolf=wolf
 
  def buildProtocol(self,addr):
-  p=KBot(self.channel)
+  p=KBot(self.channel,self.wolf)
   p.factory=self
   return p
 
@@ -42,7 +49,8 @@ class KBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
  if len(sys.argv)==3:
   r=p.Reddit(user_agent="klaatu")
-  f = KBotFactory("#"+sys.argv[2])
+  client=wolframalpha.Client("Wolfram Key")
+  f = KBotFactory("#"+sys.argv[2],client)
   reactor.connectTCP(sys.argv[1], 6667, f)
   reactor.run()
  else:
